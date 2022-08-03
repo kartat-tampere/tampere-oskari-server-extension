@@ -29,6 +29,7 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -129,11 +130,9 @@ public class WFSAttachmentsHandler extends RestActionHandler {
         response.setContentType(getContentType(file.getFileExtension()));
         // attachment header
         response.addHeader("Content-Disposition", "attachment; filename=\"" + getFilename(file, language) + "\"");
-        IOHelper.copy(
-                file.getFile(),
-                response.getOutputStream());
-        response.getOutputStream().flush();
-        response.getOutputStream().close();
+        try (OutputStream out = response.getOutputStream()) {
+            IOHelper.copy(file.getFile(), out);
+        }
     }
 
     private JSONArray getFilesForLayer(int layerId) throws Exception {
