@@ -9,10 +9,12 @@ import fi.nls.oskari.service.ServiceException;
 import fi.nls.oskari.service.ServiceRuntimeException;
 import fi.nls.oskari.util.PropertyUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -126,24 +128,23 @@ public class FileService {
         if (!path.isPresent()) {
             return Collections.EMPTY_LIST;
         }
-        try {
-            return Files.list(path.get())
-                    .map(p -> p.toFile())
-                    .filter(f -> f.canRead() && !f.isDirectory())
-                    .map(f -> {
-                        WFSAttachment file = new WFSAttachment();
-                        String[] name = FileService.getBaseAndExtension(f.getName());
-                        file.setLocale(name[0]);
-                        file.setFileExtension(name[1]);
-                        file.setFeatureId(featureId);
-                        file.setLayerId(layerId);
-                        file.setExternal(true);
-                        return file;
-                    })
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new ServiceRuntimeException("Unable to read files", e);
+        File dir = path.get().toFile();
+        List<WFSAttachment> attachments = new ArrayList<>();
+        for (File f : dir.listFiles(f -> f.canRead() && !f.isDirectory())) {
+            attachments.add(toWFSAttachment(f, layerId, featureId));
         }
+        return attachments;
+    }
+
+    private WFSAttachment toWFSAttachment(File f, int layerId, String featureId) {
+        WFSAttachment file = new WFSAttachment();
+        String[] name = FileService.getBaseAndExtension(f.getName());
+        file.setLocale(name[0]);
+        file.setFileExtension(name[1]);
+        file.setFeatureId(featureId);
+        file.setLayerId(layerId);
+        file.setExternal(true);
+        return file;
     }
 
     public List<WFSAttachment> getFiles(int layerId, String featureId) {
