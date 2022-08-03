@@ -37,17 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static fi.nls.oskari.control.ActionConstants.PARAM_SRS;
-
 @OskariActionRoute("WFSAttachments")
 public class WFSAttachmentsHandler extends RestActionHandler {
 
     private static final Logger LOG = LogFactory.getLogger(WFSAttachmentsHandler.class);
 
-    private static final int KB = 1024 * 1024;
-    private static final int MB = 1024 * KB;
-    // Store files smaller than 128kb in memory instead of writing them to disk
-    private static final int MAX_SIZE_MEMORY = 128 * KB;
+    private static final int MB = 1024 * 1024;
+    // Store files smaller than 16mb in memory instead of writing them to disk
+    private static final int MAX_SIZE_MEMORY = 16 * MB;
     private static final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory(MAX_SIZE_MEMORY, null);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
