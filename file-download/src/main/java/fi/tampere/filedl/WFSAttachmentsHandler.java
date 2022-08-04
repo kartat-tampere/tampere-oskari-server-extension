@@ -165,19 +165,21 @@ public class WFSAttachmentsHandler extends RestActionHandler {
         try {
             List<WFSAttachment> writtenFiles = new ArrayList<>(fileItems.size());
             for (FileItem f : fileItems) {
-                WFSAttachmentFile file = new WFSAttachmentFile(f.getInputStream());
-                String[] name = FileService.getBaseAndExtension(f.getName());
-                file.setFeatureId(name[0]);
-                file.setLayerId(layerId);
-                file.setFileExtension(name[1]);
-                String locale = parameters.get("locale_" + f.getName());
-                if (locale == null) {
-                    locale = name[0];
+                try (WFSAttachmentFile file = new WFSAttachmentFile(f.getInputStream())) {
+                    String[] name = FileService.getBaseAndExtension(f.getName());
+                    file.setFeatureId(name[0]);
+                    file.setLayerId(layerId);
+                    file.setFileExtension(name[1]);
+                    String locale = parameters.get("locale_" + f.getName());
+                    if (locale == null) {
+                        locale = name[0];
+                    }
+                    LOG.info("Writing", f.getName(), f.isInMemory(), f.getSize());
+                    file.setLocale(locale);
+                    writtenFiles.add(service.insertFile(file));
+                    LOG.info("Wrote", f.getName());
                 }
-                LOG.info("Writing", f.getName(), f.isInMemory(), f.getSize());
-                file.setLocale(locale);
-                writtenFiles.add(service.insertFile(file));
-                LOG.info("Wrote", f.getName());
+                f.delete();
             }
 
             AuditLog.user(params.getClientIp(), params.getUser()).
