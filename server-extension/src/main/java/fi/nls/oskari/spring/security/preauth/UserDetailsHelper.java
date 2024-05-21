@@ -29,7 +29,7 @@ public class UserDetailsHelper {
     public static User parseUserFromHeaders(HttpServletRequest request) {
 
         User user = new User();
-        user.setEmail(getHeader(request, "X_EMAIL"));
+        user.setEmail(getHeader(request, "X_EMAIL").toLowerCase());
         user.setFirstname(getHeader(request, "X_FIRSTNAME"));
         user.setLastname(getHeader(request, "X_LASTNAME"));
         user.setScreenname(user.getEmail());
